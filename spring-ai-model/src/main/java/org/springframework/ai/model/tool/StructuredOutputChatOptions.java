@@ -23,6 +23,8 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 /**
  * Mixin interface for ChatModels that support structured output. Provides a unified way
  * to set and get the output JSON schema.
+ * <p>
+ * 一个组合接口，用于支持结构化输出的 ChatModel。提供了一种统一的方式来设置和获取输出 JSON Schema。
  *
  * @author Christian Tzolov
  */
@@ -33,7 +35,7 @@ public interface StructuredOutputChatOptions extends ChatOptions {
 	/**
 	 * Returns a new {@link StructuredOutputChatOptions.Builder} initialized with the
 	 * values of this {@link StructuredOutputChatOptions}.
-	 *
+	 * <p>
 	 * Narrows the return type of {@link ChatOptions#mutate()} so generic structured
 	 * output code can chain
 	 * {@code structuredOptions.mutate().outputSchema(schema).build()} without casting.

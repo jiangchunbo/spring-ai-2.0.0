@@ -492,6 +492,7 @@ public final class OpenAiChatModel implements ChatModel {
 		List<ChatCompletionMessageParam> chatCompletionMessageParams = prompt.getInstructions()
 			.stream()
 			.map(message -> {
+				// 处理每个 USER SYSTEM message
 				if (message.getMessageType() == MessageType.USER || message.getMessageType() == MessageType.SYSTEM) {
 					// Handle simple text content for user and system messages
 					ChatCompletionUserMessageParam.Builder builder = ChatCompletionUserMessageParam.builder();
@@ -499,6 +500,7 @@ public final class OpenAiChatModel implements ChatModel {
 					if (message instanceof UserMessage userMessage
 							&& !CollectionUtils.isEmpty(userMessage.getMedia())) {
 						// Handle media content (images, audio, files)
+						// ChatCompletionContentPart 是 Open AI 的 API 参数
 						List<ChatCompletionContentPart> parts = new ArrayList<>();
 
 						String messageText = message.getText();

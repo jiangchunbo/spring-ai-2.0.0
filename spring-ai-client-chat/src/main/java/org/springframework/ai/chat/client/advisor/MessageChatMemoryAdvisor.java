@@ -38,6 +38,8 @@ import org.springframework.util.Assert;
 
 /**
  * Memory is retrieved added as a collection of messages to the prompt
+ * <p>
+ * 这个 Advisor 可以抓取记忆以 message 集合的形式添加到提示词中
  *
  * @author Christian Tzolov
  * @author Mark Pollack
@@ -46,8 +48,14 @@ import org.springframework.util.Assert;
  */
 public final class MessageChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 
+	/**
+	 * Spring AI 的 ChatMemory 抽象，表示聊天记忆
+	 */
 	private final ChatMemory chatMemory;
 
+	/**
+	 * 这个 Advisor 顺序
+	 */
 	private final int order;
 
 	private final Scheduler scheduler;
@@ -75,17 +83,22 @@ public final class MessageChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 		String conversationId = getConversationId(chatClientRequest.context());
 
 		// 1. Retrieve the chat memory for the current conversation.
+		// 用 conversation id 会话 ID 寻找一些记忆
 		List<Message> memoryMessages = this.chatMemory.get(conversationId);
 
 		// 2. Advise the request messages list.
+		// 本次请求的 message
 		List<Message> promptMessages = chatClientRequest.prompt().getInstructions();
 		List<Message> processedMessages = new ArrayList<>();
+
+		// 如果 memory 还没有出现在提示词里，那么就先加如记忆(保证本次请求的消息永远在后面)
 		if (!isMemoryAlreadyInPrompt(promptMessages, memoryMessages)) {
 			processedMessages.addAll(memoryMessages);
 		}
 		processedMessages.addAll(promptMessages);
 
 		// 2.1. Ensure system message, if present, appears first in the list.
+		// 调整系统提示词必须出现在列表第一个
 		for (int i = 0; i < processedMessages.size(); i++) {
 			if (processedMessages.get(i) instanceof SystemMessage) {
 				Message systemMessage = processedMessages.remove(i);
@@ -95,11 +108,13 @@ public final class MessageChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 		}
 
 		// 3. Create a new request with the advised messages.
+		// 创建一个新的请求对象，因为 Spring AI 将 chatClientRequest 设计为不可变
 		ChatClientRequest processedChatClientRequest = chatClientRequest.mutate()
-			.prompt(chatClientRequest.prompt().mutate().messages(processedMessages).build())
-			.build();
+				.prompt(chatClientRequest.prompt().mutate().messages(processedMessages).build())
+				.build();
 
 		// 4. Add the new user message to the conversation memory.
+		// 将最后一个用户消息，或者是工具响应放到记忆里
 		Message userMessage = processedChatClientRequest.prompt().getLastUserOrToolResponseMessage();
 		this.chatMemory.add(conversationId, userMessage);
 
@@ -110,6 +125,7 @@ public final class MessageChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 		if (memoryMessages.isEmpty()) {
 			return true;
 		}
+
 		if (promptMessages.size() < memoryMessages.size()) {
 			return false;
 		}
@@ -133,33 +149,39 @@ public final class MessageChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 		return true;
 	}
 
+	/**
+	 * 当收到 response 之后，MessageChatMemoryAdvisor 会做一些什么呢？存储下来这些记忆
+	 */
 	@Override
 	public ChatClientResponse after(ChatClientResponse chatClientResponse, AdvisorChain advisorChain) {
+		// 解释一下这里为什么是 List，大模型看起来只会输出一个 Message 才对，实际上跟候选项有关
 		List<Message> assistantMessages = new ArrayList<>();
 		if (chatClientResponse.chatResponse() != null) {
 			assistantMessages = chatClientResponse.chatResponse()
-				.getResults()
-				.stream()
-				.map(g -> (Message) g.getOutput())
-				.toList();
+					.getResults()
+					.stream()
+					.map(g -> (Message) g.getOutput())
+					.toList();
 		}
+
+		// 将大模型的输出添加到记忆里
 		this.chatMemory.add(this.getConversationId(chatClientResponse.context()), assistantMessages);
 		return chatClientResponse;
 	}
 
 	@Override
 	public Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest,
-			StreamAdvisorChain streamAdvisorChain) {
+	                                             StreamAdvisorChain streamAdvisorChain) {
 		// Get the scheduler from BaseAdvisor
 		Scheduler scheduler = this.getScheduler();
 
 		// Process the request with the before method
 		return Mono.just(chatClientRequest)
-			.publishOn(scheduler)
-			.map(request -> this.before(request, streamAdvisorChain))
-			.flatMapMany(streamAdvisorChain::nextStream)
-			.transform(flux -> new ChatClientMessageAggregator().aggregateChatClientResponse(flux,
-					response -> this.after(response, streamAdvisorChain)));
+				.publishOn(scheduler)
+				.map(request -> this.before(request, streamAdvisorChain))
+				.flatMapMany(streamAdvisorChain::nextStream)
+				.transform(flux -> new ChatClientMessageAggregator().aggregateChatClientResponse(flux,
+						response -> this.after(response, streamAdvisorChain)));
 	}
 
 	public static Builder builder(ChatMemory chatMemory) {
@@ -181,6 +203,7 @@ public final class MessageChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 
 		/**
 		 * Set the order.
+		 *
 		 * @param order the order
 		 * @return the builder
 		 */
@@ -196,6 +219,7 @@ public final class MessageChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 
 		/**
 		 * Build the advisor.
+		 *
 		 * @return the advisor
 		 */
 		public MessageChatMemoryAdvisor build() {

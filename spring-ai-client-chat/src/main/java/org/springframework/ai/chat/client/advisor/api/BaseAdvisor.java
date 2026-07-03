@@ -30,6 +30,8 @@ import org.springframework.util.Assert;
  * Base advisor that implements common aspects of the {@link CallAdvisor} and
  * {@link StreamAdvisor}, reducing the boilerplate code needed to implement an advisor.
  * <p>
+ * 一个基础的 Advisor，实现了 CallAdvisor 和 StreamAdvisor 的通用切面逻辑，减少样板代码
+ * <p>
  * It provides default implementations for the
  * {@link #adviseCall(ChatClientRequest, CallAdvisorChain)} and
  * {@link #adviseStream(ChatClientRequest, StreamAdvisorChain)} methods, delegating the
@@ -48,22 +50,27 @@ public interface BaseAdvisor extends CallAdvisor, StreamAdvisor {
 		Assert.notNull(chatClientRequest, "chatClientRequest cannot be null");
 		Assert.notNull(callAdvisorChain, "callAdvisorChain cannot be null");
 
+		// before 类型的 advice (得到了一个全新的 request，可以修改请求行为)
 		ChatClientRequest processedChatClientRequest = before(chatClientRequest, callAdvisorChain);
+
+		// 调用下一个 Advisor
 		ChatClientResponse chatClientResponse = callAdvisorChain.nextCall(processedChatClientRequest);
+
+		// after 类型的 advice
 		return after(chatClientResponse, callAdvisorChain);
 	}
 
 	@Override
 	default Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest,
-			StreamAdvisorChain streamAdvisorChain) {
+	                                              StreamAdvisorChain streamAdvisorChain) {
 		Assert.notNull(chatClientRequest, "chatClientRequest cannot be null");
 		Assert.notNull(streamAdvisorChain, "streamAdvisorChain cannot be null");
 		Assert.notNull(getScheduler(), "scheduler cannot be null");
 
 		Flux<ChatClientResponse> chatClientResponseFlux = Mono.just(chatClientRequest)
-			.publishOn(getScheduler())
-			.map(request -> this.before(request, streamAdvisorChain))
-			.flatMapMany(streamAdvisorChain::nextStream);
+				.publishOn(getScheduler())
+				.map(request -> this.before(request, streamAdvisorChain))
+				.flatMapMany(streamAdvisorChain::nextStream);
 
 		return chatClientResponseFlux.map(response -> {
 			if (AdvisorUtils.onFinishReason().test(response)) {

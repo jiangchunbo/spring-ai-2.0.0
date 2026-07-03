@@ -65,6 +65,7 @@ public final class ChatModelCallAdvisor implements CallAdvisor {
 
 	private static ChatClientRequest augmentWithFormatInstructions(ChatClientRequest chatClientRequest) {
 
+		// 输出格式
 		String outputFormat = (String) chatClientRequest.context().get(ChatClientAttributes.OUTPUT_FORMAT.getKey());
 
 		String outputSchema = (String) chatClientRequest.context()
@@ -74,6 +75,7 @@ public final class ChatModelCallAdvisor implements CallAdvisor {
 			return chatClientRequest;
 		}
 
+		//
 		boolean usesNativeStructuredOutput = chatClientRequest.context()
 			.containsKey(ChatClientAttributes.STRUCTURED_OUTPUT_NATIVE.getKey());
 

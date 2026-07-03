@@ -117,8 +117,11 @@ public class SemanticCacheAdvisor implements BaseChatMemoryAdvisor {
 	@Override
 	public ChatClientResponse adviseCall(ChatClientRequest request, CallAdvisorChain chain) {
 		// Extract user text for semantic similarity search
+		// 获取用户输入的文本
 		String userText = extractUserText(request);
+
 		// Extract context hash for isolation (different system prompts = different cache)
+		// 获取系统消息的 hash
 		String contextHash = extractContextHash(request);
 
 		// Check cache first (with context filtering)

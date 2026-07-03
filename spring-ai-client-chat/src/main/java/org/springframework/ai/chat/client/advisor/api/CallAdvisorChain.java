@@ -35,6 +35,8 @@ public interface CallAdvisorChain extends AdvisorChain {
 	/**
 	 * Invokes the next {@link CallAdvisor} in the {@link CallAdvisorChain} with the given
 	 * request.
+	 * <p>
+	 * 调用下一个链中的下一个 CallAdvisor
 	 */
 	ChatClientResponse nextCall(ChatClientRequest chatClientRequest);
 
@@ -47,6 +49,7 @@ public interface CallAdvisorChain extends AdvisorChain {
 	/**
 	 * Creates a new CallAdvisorChain copy that contains all advisors after the specified
 	 * advisor.
+	 *
 	 * @param after the CallAdvisor after which to copy the chain
 	 * @return a new CallAdvisorChain containing all advisors after the specified advisor
 	 * @throws IllegalArgumentException if the specified advisor is not part of the chain

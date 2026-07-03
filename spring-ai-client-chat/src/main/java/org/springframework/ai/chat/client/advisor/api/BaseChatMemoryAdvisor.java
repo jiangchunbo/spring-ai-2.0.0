@@ -39,6 +39,8 @@ public interface BaseChatMemoryAdvisor extends BaseAdvisor, MemoryAdvisor {
 		Assert.notNull(context, "context cannot be null");
 		Assert.noNullElements(context.keySet().toArray(), "context cannot contain null keys");
 		Assert.notNull(context.get(ChatMemory.CONVERSATION_ID), "conversationId cannot be null");
+
+		// 必须用 chat_memory_conversation_id 这个 key 去寻找 conversation id
 		return context.get(ChatMemory.CONVERSATION_ID).toString();
 	}
 

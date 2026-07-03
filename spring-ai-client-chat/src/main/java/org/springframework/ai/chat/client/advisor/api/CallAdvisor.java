@@ -29,6 +29,13 @@ import org.springframework.ai.chat.client.ChatClientResponse;
  */
 public interface CallAdvisor extends Advisor {
 
+	/**
+	 * 让我来对你这次调用 call 进行一些建议
+	 *
+	 * @param chatClientRequest Chat 调用请求
+	 * @param callAdvisorChain  本次调用的 Advisor Chain
+	 * @return Chat 响应
+	 */
 	ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, CallAdvisorChain callAdvisorChain);
 
 }
