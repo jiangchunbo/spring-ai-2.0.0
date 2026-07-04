@@ -110,6 +110,7 @@ public class DefaultAroundAdvisorChain implements BaseAdvisorChain {
 			.order(advisor.getOrder())
 			.build();
 
+		// 用观测机制包装起来
 		return AdvisorObservationDocumentation.AI_ADVISOR
 			.observation(this.observationConvention, DEFAULT_OBSERVATION_CONVENTION, () -> observationContext,
 					this.observationRegistry)

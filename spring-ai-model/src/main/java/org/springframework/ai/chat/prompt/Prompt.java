@@ -47,8 +47,14 @@ import org.springframework.util.Assert;
  */
 public class Prompt implements ModelRequest<List<Message>> {
 
+	/**
+	 * 一些消息
+	 */
 	private final List<Message> messages;
 
+	/**
+	 * 一些选项
+	 */
 	private final @Nullable ChatOptions chatOptions;
 
 	/**
