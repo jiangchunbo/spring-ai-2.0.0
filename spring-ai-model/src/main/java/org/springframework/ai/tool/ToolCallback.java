@@ -26,6 +26,8 @@ import org.springframework.ai.tool.metadata.ToolMetadata;
 
 /**
  * Represents a tool whose execution can be triggered by an AI model.
+ * <p>
+ * 表示一个可以由 AI 模型触发的工具
  *
  * @author Thomas Vitale
  * @since 1.0.0
@@ -36,6 +38,10 @@ public interface ToolCallback {
 
 	/**
 	 * Definition used by the AI model to determine when and how to call the tool.
+	 * <p>
+	 * AI 模型可以根据这个描述据决定何时，以及如何调用这个工具
+	 * <p>
+	 * 这个定义对象包含多个字段，比如 tool name、tool description、input schema
 	 */
 	ToolDefinition getToolDefinition();
 
