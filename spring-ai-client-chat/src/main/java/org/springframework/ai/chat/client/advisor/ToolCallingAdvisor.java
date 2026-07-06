@@ -123,6 +123,8 @@ public class ToolCallingAdvisor implements CallAdvisor, StreamAdvisor, ToolAdvis
 		Assert.notNull(chatClientRequest, "chatClientRequest must not be null");
 
 		ChatOptions options = chatClientRequest.prompt().getOptions();
+
+		// 如果 Chat Model 对应的 ChatOptions 不支持工具调用，那么就继续
 		if (!(options instanceof ToolCallingChatOptions toolCallingChatOptions)) {
 			// No tool calling options - skip the tool calling advisor
 			return callAdvisorChain.nextCall(chatClientRequest);
@@ -154,6 +156,8 @@ public class ToolCallingAdvisor implements CallAdvisor, StreamAdvisor, ToolAdvis
 			// After Call
 
 			ChatResponse chatResponse = chatClientResponse.chatResponse();
+
+			// 判断 AI 的返回是否是一个工具调用
 			isToolCall = this.toolExecutionEligibilityChecker.isToolCallResponse(chatResponse);
 
 			if (isToolCall) {

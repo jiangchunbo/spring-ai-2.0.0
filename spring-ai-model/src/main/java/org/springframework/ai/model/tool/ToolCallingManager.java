@@ -32,6 +32,8 @@ public interface ToolCallingManager {
 
 	/**
 	 * Resolve the tool definitions from the model's tool calling options.
+	 * <p>
+	 * 从 ToolCallingChatOptions 中解析出 Tool 的定义
 	 */
 	List<ToolDefinition> resolveToolDefinitions(ToolCallingChatOptions chatOptions);
 

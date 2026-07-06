@@ -59,6 +59,8 @@ final class DefaultChatClientUtils {
 		// System Text => First in the list
 		String processedSystemText = inputRequest.getSystemText();
 		if (StringUtils.hasText(processedSystemText)) {
+
+			// 还能设置系统提示词的参数，然后渲染参数
 			if (!CollectionUtils.isEmpty(inputRequest.getSystemParams())) {
 				processedSystemText = PromptTemplate.builder()
 					.template(processedSystemText)
@@ -67,6 +69,8 @@ final class DefaultChatClientUtils {
 					.build()
 					.render();
 			}
+
+			// 添加 System Message
 			processedMessages.add(SystemMessage.builder()
 				.text(processedSystemText)
 				.metadata(inputRequest.getSystemMetadata())
@@ -105,14 +109,19 @@ final class DefaultChatClientUtils {
 			builder = builder.combineWith(inputRequest.getOptionsCustomizer());
 		}
 
+		// 通常来说，某个厂商如果支持工具调用，那么对应的 ChatOptions 一般实现了 ToolCallingChatOptions
 		if (builder instanceof ToolCallingChatOptions.Builder<?> tbuilder) {
 
+			// 获取用户传入的 Tool Callback (初始化一下 ToolCallback)
 			List<ToolCallback> toolCallbacks = new ArrayList<>(inputRequest.getToolCallbacks());
+
+			// ToolCallbackPrivider 也能提供 ToolCallback
 			for (var provider : inputRequest.getToolCallbackProviders()) {
 				toolCallbacks.addAll(java.util.List.of(provider.getToolCallbacks()));
 			}
 
 			if (!toolCallbacks.isEmpty()) {
+				// tool name 不能重名
 				ToolCallingChatOptions.validateToolCallbacks(toolCallbacks);
 				tbuilder.toolCallbacks(toolCallbacks);
 			}
